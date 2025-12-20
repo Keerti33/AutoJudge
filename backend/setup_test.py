@@ -1,0 +1,1 @@
+print("AutoJudge AI Engine is ready.")
