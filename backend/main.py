@@ -1,31 +1,59 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware # <--- NEW IMPORT
-from pydantic import BaseModel
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import joblib
+import os
 
-app = FastAPI()
+app = Flask(__name__)
+CORS(app)  
+print("--- Loading Real AI Models... ---")
 
-# --- NEW SECTION: ALLOW FRONTEND CONNECTION ---
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins (for development)
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-# ----------------------------------------------
 
-# Load the Brain
-model = joblib.load("rating_predictor_model.pkl")
-vectorizer = joblib.load("tfidf_vectorizer.pkl")
+try:
 
-class ProblemInput(BaseModel):
-    text: str
+    model = joblib.load('rating_predictor_model.pkl')
+    vectorizer = joblib.load('tfidf_vectorizer.pkl')
+    print("✅ Success: Models loaded correctly.")
+except FileNotFoundError:
+    print("❌ Error: Model files not found!")
+    print("   Run 'python train_model.py' first to generate them.")
+    model = None
+    vectorizer = None
 
-@app.post("/predict")
-def predict_difficulty(input_data: ProblemInput):
-    # Same logic as before
-    user_text = [input_data.text]
-    text_vectorized = vectorizer.transform(user_text)
-    prediction = model.predict(text_vectorized)
-    return {"predicted_rating": int(prediction[0])}
+
+@app.route('/')
+def home():
+    return "AutoJudge Real-AI Backend is Running!"
+
+@app.route('/predict', methods=['POST'])
+def predict():
+ 
+    if not model or not vectorizer:
+        return jsonify({"error": "Models not loaded. Run train_model.py first."}), 500
+
+ 
+    data = request.get_json()
+    user_text = data.get('text', '')
+
+    text_vector = vectorizer.transform([user_text])
+
+
+    predicted_rating = model.predict(text_vector)[0]
+
+
+    if predicted_rating < 1200:
+        difficulty_status = "Easy"
+    elif predicted_rating < 1600:
+        difficulty_status = "Medium"
+    else:
+        difficulty_status = "Hard"
+
+ 
+    return jsonify({
+        "status": "success",
+        "input_text": user_text,
+        "difficulty_score": int(predicted_rating),  # The Regression Result
+        "difficulty_status": difficulty_status      # The Classification Result
+    })
+
+if __name__ == '__main__':
+    app.run(debug=True)

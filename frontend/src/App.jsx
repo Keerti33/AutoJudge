@@ -2,14 +2,13 @@ import { useState } from 'react'
 import './App.css'
 
 function App() {
-  // 1. "State" to remember what the user types
+ 
   const [problemText, setProblemText] = useState("");
 
-  // 2. "State" to remember the result from the AI
+
   const [prediction, setPrediction] = useState(null);
 
-  // 3. The function that runs when you click the button
-  // Replace the old handlePredict with this:
+
   const handlePredict = async () => {
     try {
       const response = await fetch("http://127.0.0.1:8000/predict", {
