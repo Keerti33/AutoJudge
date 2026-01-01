@@ -4,14 +4,13 @@ import './App.css'
 function App() {
  
   const [problemText, setProblemText] = useState("");
-
-
-  const [prediction, setPrediction] = useState(null);
-
+  const [score, setScore] = useState(null);
+  const [status, setStatus] = useState(null);
 
   const handlePredict = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/predict", {
+   
+      const response = await fetch("http://127.0.0.1:5000/predict", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -20,10 +19,14 @@ function App() {
       });
 
       const data = await response.json();
-      setPrediction(data.predicted_rating);
+      
+    
+      setScore(data.difficulty_score);
+      setStatus(data.difficulty_status);
+
     } catch (error) {
       console.error("Error connecting to server:", error);
-      alert("Failed to connect to the AI. Is the backend running?");
+      alert("Failed to connect to the AI. Is the backend running on Port 5000?");
     }
   };
 
@@ -44,10 +47,11 @@ function App() {
         Predict Difficulty
       </button>
 
-      {/* The Result Area (Only shows if we have a prediction) */}
-      {prediction && (
-        <div className="result">
-          <h2>Predicted Rating: {prediction}</h2>
+      {/* The Result Area */}
+      {score !== null && (
+        <div className="result" style={{marginTop: '20px'}}>
+          <h2>Difficulty: <span style={{color: '#61dafb'}}>{status}</span></h2>
+          <h3>Predicted Rating: {score}</h3>
         </div>
       )}
     </div>
