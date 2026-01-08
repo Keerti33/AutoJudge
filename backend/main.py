@@ -40,9 +40,10 @@ def predict():
     predicted_rating = model.predict(text_vector)[0]
 
 
-    if predicted_rating < 1200:
+    
+    if predicted_rating < 1350:  
         difficulty_status = "Easy"
-    elif predicted_rating < 1600:
+    elif predicted_rating < 1700: 
         difficulty_status = "Medium"
     else:
         difficulty_status = "Hard"
@@ -51,8 +52,8 @@ def predict():
     return jsonify({
         "status": "success",
         "input_text": user_text,
-        "difficulty_score": int(predicted_rating),  # The Regression Result
-        "difficulty_status": difficulty_status      # The Classification Result
+        "difficulty_score": int(predicted_rating), 
+        "difficulty_status": difficulty_status      
     })
 
 if __name__ == '__main__':
